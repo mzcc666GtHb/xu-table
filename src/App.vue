@@ -1,60 +1,60 @@
 <template>
   <div id="app">
-    <div style="position: relative;">
-      <div class="wapper">
-        <!--固定在左侧-->
-        <div class="wapper-left" v-if="fixedLeftDatas.length">
+    <div class="md-grid-wrap">
+      <div class="md-grid-box">
+        <div class="md-grid-l-h md-grid-h" v-if="hasLeft">
           <table>
-            <thead>
             <tr>
-              <th>ID</th>
-              <th>性别</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr v-for="row in rows">
-              <td v-for="fixedData in fixedLeftDatas">
-                <div :style="{width:fixedData.width+'px',padding:'6px'}">{{row[fixedData.field]}}</div>
+              <td v-for="item in leftDatas">
+                {{item.title}}
               </td>
             </tr>
-            </tbody>
           </table>
         </div>
-        <div class="wapper-main">
+        <div class="md-grid-l-b md-grid-b" v-if="hasLeft">
           <table>
-            <thead>
-            <tr>
-              <th v-for="col in cols">{{col.title}}</th>
-            </tr>
-            </thead>
-            <tbody>
             <tr v-for="row in rows">
-              <td v-for="col in cols" :style="{width:col.width+'px'}">
-                <div :style="{width:col.width+'px',padding:'6px'}">{{row[col.field]}}</div>
+              <td v-for="item in leftDatas">
+                {{row[item.field]}}
               </td>
             </tr>
-            </tbody>
           </table>
         </div>
-        <!--固定在右侧-->
-        <div class="wapper-right" v-if="fixedRightDatas.length">
-          <table width="100">
-            <thead>
+        <div class="md-grid-m-h md-grid-h" ref="middlHeader">
+          <table>
             <tr>
-              <th>Month</th>
-              <th>Savings</th>
+              <td v-for="item in middleDatas" :style="{width:item.width + 'px'}">{{item.title}}</td>
             </tr>
-            </thead>
-            <tbody>
+          </table>
+        </div>
+        <div class="md-grid-m-b md-grid-b">
+          <vue-scroll :ops="ops" @handle-scroll="handleScroll">
+            <table>
+              <tr v-for="row in rows">
+                <td v-for="item in middleDatas" :style="{width:item.width + 'px'}">
+
+                  {{row[item.field]}}
+                </td>
+              </tr>
+            </table>
+          </vue-scroll>
+        </div>
+        <div class="md-grid-r-h md-grid-h" v-if="hasRight">
+          <table>
             <tr>
-              <td>January</td>
-              <td>$100</td>
+              <td v-for="item in rightDatas">
+                {{item.title}}
+              </td>
             </tr>
-            <tr>
-              <td>February</td>
-              <td>$80</td>
+          </table>
+        </div>
+        <div class="md-grid-r-b md-grid-b" v-if="hasRight">
+          <table>
+            <tr v-for="row in rows">
+              <td v-for="item in rightDatas">
+                {{row[item.field]}}
+              </td>
             </tr>
-            </tbody>
           </table>
         </div>
       </div>
@@ -63,6 +63,7 @@
 </template>
 
 <script>
+
   export default {
     name: 'app',
     data() {
@@ -182,24 +183,45 @@
 
         ],
         cols: [
-          {field: 'id', title: 'ID', width: 80, sort: true, fixed: 'left'}
+          {field: 'id', title: 'ID', sort: true, fixed: 'left', width: 180}
           , {field: 'username', title: '用户名', width: 80}
-          , {field: 'sex', title: '性别', width: 80, sort: true,fixed: 'left'}
-          , {field: 'city', title: '城市', width: 80}
-          , {field: 'sign', title: '签名', width: 177}
-          , {field: 'experience', title: '积分', width: 80, sort: true}
-          , {field: 'score', title: '评分', width: 80, sort: true}
+          , {field: 'sex', title: '性别', sort: true, fixed: 'left', width: 80}
+          , {field: 'city', title: '城市'}
+          , {field: 'sign', title: '签名', width: 180}
+          , {field: 'experience', title: '积分', width: 180, sort: true}
+          , {field: 'score', title: '评分', sort: true, width: 80}
           , {field: 'classify', title: '职业', width: 80}
-          , {field: 'wealth', title: '财富', width: 135, sort: true}
-        ]
+          , {field: 'wealth', title: '财富', sort: true, fixed: 'left', width: 80}
+        ],
+        ops: {
+          bar: {
+            background: '#ddd',
+            opacity: 0.8,
+            size: '8px'
+          }
+        },
+        pos: {
+          middleHeaderPos: ''
+        }
       }
     },
     computed: {
-      fixedLeftDatas() {
+      middleDatas() {
+        return this.cols.filter(item => {
+          return !item.fixed
+        })
+      },
+      leftDatas() {
         return this.filterFixedData('left')
       },
-      fixedRightDatas() {
+      rightDatas() {
         return this.filterFixedData('right')
+      },
+      hasLeft() {
+        return this.leftDatas.length ? true : false
+      },
+      hasRight() {
+        return this.rightDatas.length ? true : false
       }
     },
     methods: {
@@ -207,7 +229,22 @@
         return this.cols.filter(item => {
           return item.fixed === pos
         })
+      },
+      handleScroll(v, h, e) {
+        this.$refs.middlHeader.style.left = (this.pos.middleHeaderPos - h.scrollLeft) + 'px'
+      },
+      getPos(ref) {
+        let dom = this.$refs[ref],
+          offsetleft = dom.offsetLeft,
+          offsetTop = dom.offsetTop
+        return {
+          offsetleft,
+          offsetTop
+        }
       }
+    },
+    mounted() {
+      this.pos.middleHeaderPos = this.getPos('middlHeader')
     }
   }
 </script>
@@ -217,6 +254,7 @@
     margin: 0;
     padding: 0;
     list-style: none;
+    box-sizing: border-box;
   }
 
   table {
@@ -224,46 +262,98 @@
     text-align: center; /*文本居中*/
     border-collapse: collapse; /*表格的边框合并，如果相邻，则共用一个边框*/
     border-spacing: 0; /*设置行与单元格边框的间距。当表格边框独立（即border-collapse:separate;）此属性才起作用*/
-    background-color: #fff;
-  }
-
-  thead {
-    background-color: #eee;
+    table-layout: fixed;
   }
 
   table td, table th {
-    word-break: break-all; /*允许在字内换行,即单词可分*/
-    word-wrap: break-word; /*允许长单词或URL地址换行*/
+    white-space: nowrap;
+    text-overflow: ellipsis;
     border: 1px solid #ddd;
     font-size: 14px;
     line-height: 1.5;
+    padding: 6px 0;
   }
 
-  .wapper {
-    background-color: skyblue;
-    width: 100%;
-    min-width: 600px;
-    overflow-x: auto;
+  .md-grid-wrap {
+    position: relative;
+    background-color: deepskyblue;
+    height: 251px;
+    max-width: 800px;
   }
-  .wapper-left {
-    width: 300px;
-    height: 100%;
+
+  .md-grid-box {
     position: absolute;
     top: 0;
     left: 0;
-    z-index: 10;
-    box-shadow: 0 -1px 8px rgba(0,0,0,.08);
-  }
-  .wapper-main table{
-    min-width: 1000px;
-  }
-  .wapper-right {
-    width: 300px;
-    height: 100%;
-    position: absolute;
-    top: 0;
     right: 0;
-    z-index: 10;
+    bottom: 0;
   }
 
+  /*header部分start */
+  .md-grid-h {
+    position: absolute;
+    top: 0;
+    height: 30px;
+  }
+
+  .md-grid-h table {
+    height: 100%;
+  }
+
+  .md-grid-l-h {
+    left: 0;
+    width: 200px;
+    background-color: darkorange;
+    z-index: 101;
+  }
+
+  .md-grid-m-h {
+    left: 200px;
+    right: 0px;
+    overflow: hidden;
+    background-color: mediumslateblue;
+  }
+
+  .md-grid-r-h {
+    right: 0;
+    width: 200px;
+    background-color: darkorange;
+  }
+
+  /*header部分end */
+
+  /*body部分start*/
+  .md-grid-b {
+    position: absolute;
+    top: 30px;
+    bottom: 0;
+  }
+
+  .md-grid-l-b {
+    width: 200px;
+    left: 0;
+    background-color: gray;
+    overflow: hidden;
+  }
+
+  .md-grid-m-b {
+    left: 200px;
+    right: 0px;
+    overflow: auto;
+    background-color: lightseagreen;
+  }
+
+  .md-grid-r-b {
+    bottom: 0;
+    right: 0;
+    width: 200px;
+    background-color: gray;
+  }
+
+  /*body部分end*/
+
+  /*scrollbar 样式*/
+  .mouseEnter .__bar-is-horizontal {
+    opacity: 0.8 !important;
+  }
 </style>
