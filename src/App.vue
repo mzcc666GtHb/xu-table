@@ -244,7 +244,7 @@
       }
     },
     mounted() {
-      this.pos.middleHeaderPos = this.getPos('middlHeader')
+      this.pos.middleHeaderPos = this.getPos('middlHeader').offsetleft
     }
   }
 </script>
